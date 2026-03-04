@@ -1,0 +1,10 @@
+{
+    "configurations": [
+        {
+            "name"   : "hello-world",
+            "type"   : "debugpy",
+            "request": "launch",
+            "code"   : "print('hello, world!')"
+        }
+    ]
+}

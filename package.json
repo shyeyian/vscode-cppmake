@@ -15,7 +15,7 @@
         "type": "git",
         "url": "https://github.com/shyeyian/vscode-cppmake"
     },
-    "main": "contribute/view/make.js",
+    "main": "contribute/view/sarif.js",
     "activationEvents": [
         "onStartupFinished"
     ],
@@ -34,11 +34,29 @@
             "key": "ctrl+shift+m",
             "command": "make.focus"
         },
+        "menus": {
+            "view/item/context": [
+            ]
+        },
+        "viewsContainers": {
+            "activitybar": [
+                {
+                    "id": "make",
+                    "title": "%Make%",
+                    "icon": "$(issues)"
+                },
+                {
+                    "id": "run",
+                    "title": "%Run%",
+                    "icon": "$(run-all)"
+                }
+            ]
+        },
         "views": {
             "make": [
                 {
-                    "id": "make",
-                    "name": "%contributes.views.make.name%",
+                    "id": "sarif",
+                    "name": "%Sarif%",
                     "icon": "$(issues)"
                 }
             ]

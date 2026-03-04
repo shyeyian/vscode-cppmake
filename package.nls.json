@@ -1,3 +1,7 @@
 {
-    "contributes.views.make.name": "Make"
+    "Launch": "Launch",
+    "Make": "Make",
+    "Run": "Run",
+    "Sarif": "Sarif",
+    "Task": "Task"
 }

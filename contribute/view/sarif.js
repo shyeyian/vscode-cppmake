@@ -6,7 +6,7 @@ const vscode = require('vscode')
 /**
  * @implements {vscode.TreeDataProvider<SarifFile | SarifResult | SarifRelatedLocation>}
  */
-class Sarif {
+class SarifTreeDataProvider {
     /** @type {vscode.Event<void>} */
     onDidChangeTreeData
 
@@ -76,14 +76,12 @@ class SarifFileList {
                                     const sarifFile = await new SarifFile().read(directory, file)
                                     if (sarifFile.children.length >= 1)
                                         this.children.push(sarifFile)
-                                }
-                                catch (error) {
-                                    console.warn(`reading sarif file failed (with file = ${file}: ${error}`)
+                                } catch (error) {
+                                    console.warn(`failed to read sarif file (with file = ${file})`, {cause: error})
                                 }
                             }
-                    }
-                    catch (error) {
-                        console.warn(`reading sarif directory failed (with directory = ${directory}): ${error}`)
+                    } catch (error) {
+                        console.warn(`failed to reading sarif directory (with directory = ${directory})`, {cause: error})
                     }
                 }
         return this
@@ -169,15 +167,15 @@ class SarifRelatedLocation {
     }
 }
 
-const sarif = new Sarif()
+const sarifTreeDataProvider = new SarifTreeDataProvider()
 
-const makeView = vscode.window.createTreeView('make', {
-    treeDataProvider: sarif
+const sarifView = vscode.window.createTreeView('sarif', {
+    treeDataProvider: sarifTreeDataProvider
 })
 
-const refreshMakeViewDaemon = makeView.onDidChangeVisibility(view => {
+const refreshSarifViewDaemon = sarifView.onDidChangeVisibility(view => {
     if (view.visible)
-        sarif.refresh()
+        sarifTreeDataProvider.refresh()
 })
 
 const showPhysicalLocationCommand = vscode.commands.registerCommand('showPhysicalLocation', async (physicalLocation, originalUriBaseIds) => {
@@ -252,9 +250,9 @@ function _showPhysicalLocation(physicalLocation, originalUriBaseIds) {
  * @returns {void}
  */
 function activate(context) {
-    context.subscriptions.push(makeView)
+    context.subscriptions.push(sarifView)
+    context.subscriptions.push(refreshSarifViewDaemon)
     context.subscriptions.push(showPhysicalLocationCommand)
-    context.subscriptions.push(refreshMakeViewDaemon)
 }
 
 module.exports = {activate}

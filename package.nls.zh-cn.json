@@ -1,3 +1,7 @@
 {
-    "contributes.views.make.name": "构建"
+    "Launch": "启动",
+    "Make": "构建",
+    "Run": "运行",
+    "Sarif": "分析",
+    "Task": "任务"
 }
