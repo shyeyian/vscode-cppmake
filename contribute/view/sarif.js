@@ -109,10 +109,11 @@ class SarifFile {
         const sarif            = JSON.parse((await vscode.workspace.fs.readFile(file)).toString())
         this.treeItem          = new vscode.TreeItem('')
         this.treeItem.label    = path.relative(directory.fsPath, file.fsPath).replace(/\.sarif$/, '')
+        this.treeItem.id       = path.relative(directory.fsPath, file.fsPath).replace(/\.sarif$/, '')
         this.treeItem.iconPath = _getIconPath('file')
         for (const run of sarif.runs)
-            for (const result of run.results)
-                this.children.push(new SarifResult(result, run))
+            for (const [resultIndex, result] of run.results.entries())
+                this.children.push(new SarifResult(result, resultIndex, run))
         return this
     }
 }
@@ -126,13 +127,16 @@ class SarifResult {
 
     /**
      * @param {_Json} result
+     * @param {number} resultIndex
      * @param {_Json} parentRun
      */
-    constructor(result, parentRun) {
+    constructor(result, resultIndex, parentRun) {
         this.treeItem              = new vscode.TreeItem('')
-        this.treeItem.label        = result.message.text
+        this.treeItem.label        = result?.message?.text
+        this.treeItem.id           = resultIndex.toString()
         this.treeItem.iconPath     = _getIconPath(result.level)
-        this.treeItem.command      = result.locations != undefined ? _showPhysicalLocation(result.locations[0].physicalLocation, parentRun.originalUriBaseIds) : undefined
+        this.treeItem.description  = result.locations?.[0]?.logicalLocations?.[0]?.name
+        this.treeItem.command      = _showPhysicalLocation(result.locations?.[0].physicalLocation, parentRun.originalUriBaseIds)
         this.children              = []
         if (result.relatedLocations != undefined) {
             /** @type {Map<number, any>} */
@@ -159,11 +163,13 @@ class SarifRelatedLocation {
      * @param {_Json} parentRun
      */
     constructor(relatedLocation, parentRun) {
-        this.treeItem          = new vscode.TreeItem('')
-        this.treeItem.label    = relatedLocation.message.text
-        this.treeItem.iconPath = _getIconPath('note')
-        this.treeItem.command  = relatedLocation.physicalLocation != undefined ? _showPhysicalLocation(relatedLocation.physicalLocation, parentRun.originalUriBaseIds) : undefined
-        this.children          = []
+        this.treeItem             = new vscode.TreeItem('')
+        this.treeItem.label       = relatedLocation?.message?.text
+        this.treeItem.id          = relatedLocation.id
+        this.treeItem.iconPath    = _getIconPath('note')
+        this.treeItem.description = relatedLocation.logicalLocations
+        this.treeItem.command     = _showPhysicalLocation(relatedLocation.physicalLocation, parentRun.originalUriBaseIds)
+        this.children             = []
     }
 }
 
@@ -173,7 +179,7 @@ const sarifView = vscode.window.createTreeView('sarif', {
     treeDataProvider: sarifTreeDataProvider
 })
 
-const refreshSarifViewDaemon = sarifView.onDidChangeVisibility(view => {
+const sarifViewRefreshDaemon = sarifView.onDidChangeVisibility(view => {
     if (view.visible)
         sarifTreeDataProvider.refresh()
 })
@@ -201,7 +207,7 @@ const showPhysicalLocationCommand = vscode.commands.registerCommand('showPhysica
 
 
 
-/** @typedef {Record<string, any>} _Json */
+/** @typedef {boolean | number | string | _Json[] | { [key: string]: _Json}} _Json */
 
 /**
  * @param {vscode.Uri} directory
@@ -232,7 +238,7 @@ function _getIconPath(name) {
 /**
  * @param {_Json} physicalLocation
  * @param {_Json} originalUriBaseIds
- * @returns {vscode.Command}
+ * @returns {vscode.Command | undefined}
  */
 function _showPhysicalLocation(physicalLocation, originalUriBaseIds) {
     return {
@@ -251,7 +257,7 @@ function _showPhysicalLocation(physicalLocation, originalUriBaseIds) {
  */
 function activate(context) {
     context.subscriptions.push(sarifView)
-    context.subscriptions.push(refreshSarifViewDaemon)
+    context.subscriptions.push(sarifViewRefreshDaemon)
     context.subscriptions.push(showPhysicalLocationCommand)
 }
 

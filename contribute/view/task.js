@@ -86,7 +86,7 @@ class Task {
         this.treeItem             = new vscode.TreeItem('')
         this.treeItem.label       = task.label  ?? '[task]'
         this.treeItem.description = task.detail ?? this.treeItem.label
-        this.treeItem.
+        this.treeItem.checkboxState
         
     }
 }
