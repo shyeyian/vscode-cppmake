@@ -132,22 +132,20 @@ class SarifResult {
      */
     constructor(result, resultIndex, parentRun) {
         this.treeItem              = new vscode.TreeItem('')
-        this.treeItem.label        = result?.message?.text
+        this.treeItem.label        = result.message.text
         this.treeItem.id           = resultIndex.toString()
-        this.treeItem.iconPath     = _getIconPath(result.level)
-        this.treeItem.description  = result.locations?.[0]?.logicalLocations?.[0]?.name
-        this.treeItem.command      = _showPhysicalLocation(result.locations?.[0].physicalLocation, parentRun.originalUriBaseIds)
+        this.treeItem.iconPath     = _getIconPath(result?.level)
+        this.treeItem.description  = result.locations[0].logicalLocations[0].name
+        this.treeItem.command      = _showPhysicalLocation(result.locations[0].physicalLocation, parentRun.originalUriBaseIds)
         this.children              = []
-        if (result.relatedLocations != undefined) {
-            /** @type {Map<number, any>} */
-            const mountable = new Map([[-1, this], [0, this]])
-            for (const relatedLocation of result.relatedLocations)
-                if (relatedLocation.message != undefined) {
-                    const sarifRelatedLocation = new SarifRelatedLocation(relatedLocation, parentRun)
-                    mountable.get(relatedLocation.properties.nestingLevel - 1)?.children.push(sarifRelatedLocation)
-                    mountable.set(relatedLocation.properties.nestingLevel, sarifRelatedLocation)  
-                }                        
-        }
+        /** @type {Map<number, any>} */
+        const mountable = new Map([[-1, this], [0, this]])
+        for (const relatedLocation of result.relatedLocations)
+            if (relatedLocation.message != undefined) {
+                const sarifRelatedLocation = new SarifRelatedLocation(relatedLocation, parentRun)
+                mountable.get(relatedLocation.properties.nestingLevel - 1).children.push(sarifRelatedLocation)
+                mountable.set(relatedLocation.properties.nestingLevel, sarifRelatedLocation)  
+            }                        
     }
 }
 
@@ -164,10 +162,10 @@ class SarifRelatedLocation {
      */
     constructor(relatedLocation, parentRun) {
         this.treeItem             = new vscode.TreeItem('')
-        this.treeItem.label       = relatedLocation?.message?.text
+        this.treeItem.label       = relatedLocation.message.text
         this.treeItem.id          = relatedLocation.id
         this.treeItem.iconPath    = _getIconPath('note')
-        this.treeItem.description = relatedLocation.logicalLocations
+        this.treeItem.description = relatedLocation.logicalLocations[0].name
         this.treeItem.command     = _showPhysicalLocation(relatedLocation.physicalLocation, parentRun.originalUriBaseIds)
         this.children             = []
     }
@@ -207,7 +205,7 @@ const showPhysicalLocationCommand = vscode.commands.registerCommand('showPhysica
 
 
 
-/** @typedef {boolean | number | string | _Json[] | { [key: string]: _Json}} _Json */
+/** @typedef {any} _Json */
 
 /**
  * @param {vscode.Uri} directory
@@ -238,7 +236,7 @@ function _getIconPath(name) {
 /**
  * @param {_Json} physicalLocation
  * @param {_Json} originalUriBaseIds
- * @returns {vscode.Command | undefined}
+ * @returns {vscode.Command}
  */
 function _showPhysicalLocation(physicalLocation, originalUriBaseIds) {
     return {
