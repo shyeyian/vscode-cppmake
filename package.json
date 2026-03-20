@@ -4,7 +4,7 @@
     "description": "cppmake",
     "icon": "share/package.png",
     "publisher": "shyeyian",
-    "version": "1.1.57",
+    "version": "1.1.58",
     "engines": {
         "vscode": "^1.100.0"
     },
