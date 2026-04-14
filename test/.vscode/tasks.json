@@ -2,22 +2,22 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "install",
-            "detail": "node install.js",
+            "label": "hello",
+            "detail": "echo hello",
             "group": "build",
-            "command": "node",
+            "command": "echo",
             "args": [
-                "install.js"
+                "hello"
             ]
         },
         {
-            "label": "upload",
-            "detail": "node upload.js",
+            "label": "world",
+            "detail": "echo world",
             "group": "build",
-            "command": "node",
+            "command": "echo",
             "args": [
-                "upload.js"
+                "world"
             ]
-        },
+        }
     ]
 }
